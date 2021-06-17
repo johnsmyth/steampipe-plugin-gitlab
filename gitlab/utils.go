@@ -3,12 +3,13 @@ package gitlab
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
-	api "github.com/xanzy/go-gitlab"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
+	api "github.com/xanzy/go-gitlab"
 )
 
 func connect(ctx context.Context, d *plugin.QueryData) (*api.Client, error) {
@@ -43,7 +44,7 @@ func connect(ctx context.Context, d *plugin.QueryData) (*api.Client, error) {
 
 // sanitizeUrl is a util func for stripping accidental double slashes in urls
 func sanitizeUrl(url string) string {
-	return strings.ReplaceAll(url, "//","/")
+	return strings.ReplaceAll(url, "//", "/")
 }
 
 // isoTimeTransform is a transformation func for *gitlab.ISOTime to *time.Time
@@ -75,4 +76,16 @@ func parseAccessLevel(input int) string {
 	default:
 		return "No Permissions"
 	}
+}
+
+func isGitlabCloud(d *plugin.QueryData) bool {
+	gitlabConfig := GetConfig(d.Connection)
+	if &gitlabConfig != nil {
+		if gitlabConfig.BaseUrl != nil {
+			if *gitlabConfig.BaseUrl == GitlabCloudApiUrl {
+				return true
+			}
+		}
+	}
+	return false
 }
